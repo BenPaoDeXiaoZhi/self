@@ -1,17 +1,16 @@
 /**
  * 博客文章详情页入口（public/blog.html）。
- * 从构建产物 generated-blogs.json 中按标题查找文章，
- * 使用 markdown-it 将 Markdown 正文渲染为 HTML。
+ * 先从元数据确认 title 存在，再按 title 拉单独 chunk 渲染 Markdown。
  */
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
 import markdownIt from "markdown-it";
 // @ts-ignore
 import mila from "markdown-it-task-lists";
-import { loadRawBlogs } from "../shared/blogs";
+import { loadBlogChunk, loadBlogMeta } from "../shared/blogs";
 import { mustQuery } from "../shared/dom";
 import { setupTheme } from "../shared/theme";
-import type { RawBlog } from "../shared/types";
+import type { RawBlogChunk } from "../shared/types";
 
 hljs.registerLanguage("javascript", javascript);
 
@@ -47,9 +46,9 @@ function showMessage(message: string): void {
 
 /**
  * 渲染文章详情：标题、日期、标签与 Markdown 正文。
- * @param raw - 命中的原始文章条目
+ * @param raw - 命中的单篇完整文章条目
  */
-function renderPost(raw: RawBlog): void {
+function renderPost(raw: RawBlogChunk): void {
   mustQuery<HTMLHeadingElement>("#post-title").textContent = raw.title;
   mustQuery<HTMLTimeElement>("#post-date").textContent = raw.date;
   document.title = `${raw.title} · dev.blog`;
@@ -67,7 +66,7 @@ function renderPost(raw: RawBlog): void {
 }
 
 /**
- * 初始化页面：根据 ?title= 参数查找文章并渲染详情。
+ * 初始化页面：校验 title → 拉 chunk → 渲染详情。
  */
 async function init(): Promise<void> {
   setupTheme();
@@ -79,13 +78,14 @@ async function init(): Promise<void> {
 
   showMessage("加载中…");
   try {
-    const raws = await loadRawBlogs();
-    const raw = raws.find((item) => item.title === title);
-    if (!raw) {
+    // 先查元数据确认文章存在，再拉正文 chunk
+    const metas = await loadBlogMeta();
+    if (!metas.some((m) => m.title === title)) {
       showMessage("未找到该文章");
       return;
     }
-    renderPost(raw);
+    const chunk = await loadBlogChunk(title);
+    renderPost(chunk);
   } catch (err) {
     console.error(err);
     showMessage("文章加载失败，请稍后刷新重试");
