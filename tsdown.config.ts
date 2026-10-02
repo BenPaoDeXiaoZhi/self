@@ -9,10 +9,10 @@ import { defineConfig } from "tsdown";
  * VSCode Live Server（root=/dist）或 `wrangler dev` 提供服务。
  */
 export default defineConfig({
-  /** 入口：TS 源码编译为 dist/js/*.js */
+  /** 入口：一 html 一目录，TS 源码编译为 dist/js/*.js */
   entry: {
-    "js/main": "src/main.ts",
-    "js/blog": "src/blog.ts",
+    "js/main": "src/index/main.ts",
+    "js/blog": "src/blog/main.ts",
   },
   watch: ["./blogs", "./public", "./src"],
   outDir: "dist",

@@ -1,54 +1,29 @@
-import hljs from "highlight.js";
+/**
+ * 博客文章详情页入口（public/blog.html）。
+ * 从构建产物 generated-blogs.json 中按标题查找文章，
+ * 使用 markdown-it 将 Markdown 正文渲染为 HTML。
+ */
+import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
 import markdownIt from "markdown-it";
 // @ts-ignore
 import mila from "markdown-it-task-lists";
-import { setupTheme } from "./theme";
+import { loadRawBlogs } from "../shared/blogs";
+import { mustQuery } from "../shared/dom";
+import { setupTheme } from "../shared/theme";
+import type { RawBlog } from "../shared/types";
 
-// Then register the languages you need
 hljs.registerLanguage("javascript", javascript);
-/**
- * 博客文章详情页渲染逻辑（public/blog.html）。
- * 从构建产物 generated-blogs.json 中按标题查找文章，
- * 使用 marked 将 Markdown 正文渲染为 HTML。
- */
-/** generated-blogs.json 中的原始条目（构建脚本输出结构） */
 
 const md = new markdownIt({
   highlight(str, lang) {
-    return hljs.highlight(str, {
-      language: lang,
-    }).value;
+    if (lang && hljs.getLanguage(lang)) {
+      return hljs.highlight(str, { language: lang }).value;
+    }
+    return "";
   },
 });
 md.use(mila);
-
-interface RawBlog {
-  /** Markdown 正文 */
-  content: string;
-  /** 文件名（已去除 .md 后缀） */
-  title: string;
-  /** 发布日期，格式 YYYY-MM-DD（缺失日期的文件会在构建期报错） */
-  date: string;
-  /** 描述行（"@@ ..."），可选 */
-  desc?: string;
-  /** 标签数组（可能为空数组） */
-  tags: string[];
-}
-
-/**
- * 查询指定的单个元素。
- * @param selector - CSS 选择器
- * @returns 匹配的元素
- * @throws 页面结构缺失时抛出错误
- */
-function mustQuery<T extends Element>(selector: string): T {
-  const el = document.querySelector<T>(selector);
-  if (!el) {
-    throw new Error(`Element not found: ${selector}`);
-  }
-  return el;
-}
 
 /**
  * 从 URL 查询参数中获取文章标题。
@@ -56,20 +31,6 @@ function mustQuery<T extends Element>(selector: string): T {
  */
 function getTitleParam(): string | null {
   return new URLSearchParams(window.location.search).get("title");
-}
-
-/**
- * 拉取构建生成的博客数据。
- * @returns 原始文章条目数组
- * @throws 网络、HTTP 或解析失败时抛出错误
- */
-async function loadRawBlogs(): Promise<RawBlog[]> {
-  const res = await fetch("./generated-blogs.json");
-  if (!res.ok) {
-    throw new Error(`加载博客数据失败: HTTP ${res.status}`);
-  }
-  const blogs: RawBlog[] = await res.json();
-  return blogs;
 }
 
 /**
@@ -102,9 +63,7 @@ function renderPost(raw: RawBlog): void {
   tags.replaceChildren(...spans);
 
   const content = mustQuery<HTMLDivElement>("#post-content");
-  // 默认同步解析，返回值必为 string
-  const html = md.render(raw.content);
-  content.innerHTML = html;
+  content.innerHTML = md.render(raw.content);
 }
 
 /**

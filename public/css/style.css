@@ -157,7 +157,6 @@ main {
 .avatar {
   flex: none;
   width: 96px;
-  height: 96px;
   border-radius: var(--radius);
   background: var(--accent-soft);
   color: var(--accent);
@@ -166,6 +165,21 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  object-fit: cover;
+  transition:
+    transform 100ms ease,
+    box-shadow 100ms ease;
+}
+
+.avatar:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.avatar:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .profile-info h1 {
