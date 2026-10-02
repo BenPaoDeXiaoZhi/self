@@ -639,11 +639,25 @@ main {
   border: solid white;
   width: 0.2em;
   height: 0.5em;
+  margin: auto;
   inset-inline-start: 0.35em;
   border-width: 0 0.15em 0.15em 0;
   position: absolute;
   top: 0.1em;
   transform: rotate(45deg);
+}
+
+.task-list-item-checkbox::after {
+  background-color: white;
+  height: 1em;
+  width: 1em;
+  display: block;
+  content: "";
+  text-align: center;
+  color: white;
+  border: #0991dc solid 1.5px;
+  border-radius: 4px;
+  font-size: 12.5px;
 }
 
 .task-list-item-checkbox:checked::after {
@@ -656,5 +670,5 @@ main {
   color: white;
   border: #0991dc solid 1.5px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12.5px;
 }
