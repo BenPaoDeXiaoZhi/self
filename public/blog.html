@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="博客文章详情" />
+    <title>文章 · 孟夫子的博客</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/highlight.js@11.12.0/styles/atom-one-light.min.css"
+    />
+    <link
+      id="hljs-dark"
+      rel="stylesheet"
+      href="https://unpkg.com/highlight.js@11.12.0/styles/atom-one-dark.min.css"
+      disabled
+    />
+    <script>
+      // 首屏前确定主题，避免闪烁：优先 localStorage，其次系统偏好
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch (e) {}
+        var dark = stored
+          ? stored === "dark"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        if (dark) {
+          document.getElementById("hljs-dark").disabled = false;
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./index.html">孟夫子的博客</a>
+        <nav class="nav">
+          <a href="./index.html#about">关于</a>
+          <a href="./index.html#blog">博客</a>
+          <a href="./index.html#contact">联系</a>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            深色模式
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <article class="post-detail card">
+        <div class="post-meta">
+          <time id="post-date"></time>
+          <div id="post-tags" class="post-tags"></div>
+        </div>
+        <h1 id="post-title"></h1>
+        <div id="post-content" class="post-content"></div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="muted">© 2026 孟夫子 · 持续构建中</p>
+      </div>
+    </footer>
+
+    <script type="module" src="./js/blog.js"></script>
+  </body>
+</html>

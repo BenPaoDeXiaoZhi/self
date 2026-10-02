@@ -1,12 +1,129 @@
 <!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Hello, World!</title>
-	</head>
-	<body>
-		<h1 id="heading">Hello, World!</h1>
-		<p>This page comes from a static asset stored at `public/index.html` as configured in `wrangler.jsonc`.</p>
-	</body>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="孟夫子的个人简介与博客" />
+    <title>个人主页 · 孟夫子的博客</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script>
+      // 首屏前确定主题，避免闪烁：优先 localStorage，其次系统偏好
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch (e) {}
+        var dark = stored
+          ? stored === "dark"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#top">孟夫子的博客</a>
+        <nav class="nav">
+          <a href="#about">关于</a>
+          <a href="#blog">博客</a>
+          <a href="#contact">联系</a>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            深色模式
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top" class="container">
+      <!-- 个人简介 -->
+      <section id="about" class="profile card">
+        <img src="./assets/avatar.jpeg" class="avatar" aria-hidden="true" />
+        <div class="profile-info">
+          <h1>孟夫子驾到</h1>
+          <p class="role">全栈开发者 · TypeScript / Cloudflare</p>
+          <p class="bio">
+            热衷构建简洁、可靠的 Web 应用。喜欢写类型安全的代码，
+            也在折腾边缘计算与自动化工具。
+          </p>
+          <ul class="skills" aria-label="技术栈">
+            <li>TypeScript</li>
+            <li>Svelte</li>
+            <li>Node.js</li>
+            <li>Cloudflare</li>
+            <li>React</li>
+          </ul>
+          <a class="hitokoto" href="https://developer.hitokoto.cn/"></a>
+        </div>
+        <script
+          src="https://v1.hitokoto.cn/?c=b&c=c&c=d&c=f&c=k&encode=js"
+          async
+        ></script>
+      </section>
+
+      <!-- 博客 -->
+      <section id="blog" class="blog">
+        <div class="section-head">
+          <h2>博客</h2>
+          <div
+            id="tag-filter"
+            class="tag-filter"
+            role="group"
+            aria-label="按标签筛选"
+          ></div>
+        </div>
+        <div class="search-box">
+          <input
+            id="search-input"
+            class="search-input"
+            type="search"
+            placeholder="搜索文章…"
+            aria-label="搜索文章"
+            autocomplete="off"
+          />
+          <label class="search-option">
+            <input id="search-full" type="checkbox" />
+            <span>全文搜索</span>
+          </label>
+        </div>
+        <ul id="post-list" class="post-list"></ul>
+      </section>
+
+      <!-- 联系方式 -->
+      <section id="contact" class="contact card">
+        <h2>联系</h2>
+        <p class="muted">有问题或想法？欢迎通过下面的渠道找到我。</p>
+        <div class="links">
+          <a
+            href="https://github.com/BenPaoDeXiaoZhi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://ccw.site/student/244373873"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            CCW
+          </a>
+          <a> QQ: 3817684776 </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="muted">© 2026 MengFuzi · 持续构建中</p>
+      </div>
+    </footer>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
 </html>
