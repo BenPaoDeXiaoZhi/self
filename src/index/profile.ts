@@ -4,7 +4,7 @@
 
 /** 头像与 OC 形象的静态资源路径 */
 const AVATAR_DEFAULT = "./assets/avatar.jpeg";
-const AVATAR_OC = "./assets/tgyz-oc.png";
+const AVATAR_OC = "./assets/tgyz-oc.webp";
 
 /**
  * 绑定头像点击切换：在默认头像与 OC 形象之间切换，选择记入 localStorage。

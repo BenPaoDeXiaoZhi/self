@@ -7,7 +7,7 @@
     "build": "tsdown --no-watch",
     "dev": "tsdown",
     "deploy": "npm run build && wrangler deploy",
-    "start": "wrangler dev"
+    "start": "wrangler dev --ip 0.0.0.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
