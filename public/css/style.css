@@ -527,9 +527,9 @@ html[data-theme="dark"] .search-option.is-failed .search-option-hint {
 
 .post-content blockquote {
   margin: 0 0 var(--gap);
-  padding: 8px 16px;
+  padding: 8px;
   background: var(--chip);
-  border-radius: var(--radius);
+  border-left: var(--accent-soft) solid 2px;
   color: var(--muted);
 }
 
