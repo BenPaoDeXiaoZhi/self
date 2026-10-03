@@ -51,7 +51,7 @@ function showMessage(message: string): void {
 function renderPost(raw: RawBlogChunk): void {
   mustQuery<HTMLHeadingElement>("#post-title").textContent = raw.title;
   mustQuery<HTMLTimeElement>("#post-date").textContent = raw.date;
-  document.title = `${raw.title} · dev.blog`;
+  document.title = `${raw.title} · 孟夫子的博客`;
 
   const tags = mustQuery<HTMLDivElement>("#post-tags");
   const spans = raw.tags.filter(Boolean).map((tag) => {
