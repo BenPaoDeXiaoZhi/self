@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#f8f9fa"/>
+  <!-- 外圈蓝色光环 -->
+  <circle cx="16" cy="16" r="10" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="35 8"/>
+  <!-- 中央菱形 -->
+  <polygon points="16,11 21,16 16,21 11,16" fill="#2563eb"/>
+</svg>
