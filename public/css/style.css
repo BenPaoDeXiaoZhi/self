@@ -229,7 +229,7 @@ main {
   padding: 8px 16px;
   background: var(--chip);
   border-left: 3px solid rgba(9, 105, 218, 0.35);
-  border-radius: var(--radius);
+  border-radius: 0px var(--radius) var(--radius) 0px;
   color: var(--muted);
   font-size: 0.9rem;
   min-height: 1.4em;
@@ -529,7 +529,8 @@ html[data-theme="dark"] .search-option.is-failed .search-option-hint {
   margin: 0 0 var(--gap);
   padding: 8px;
   background: var(--chip);
-  border-left: var(--accent-soft) solid 2px;
+  border-left: 3px solid rgba(9, 105, 218, 0.35);
+  border-radius: 0px var(--radius) var(--radius) 0px
   color: var(--muted);
 }
 
