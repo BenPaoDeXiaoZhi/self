@@ -1,5 +1,5 @@
 @ 2026-10-02
-@ 用户脚本 CCW 前端逆向
+@ CCW 前端 逆向
 @@ 用原型链 hook 在 Tampermonkey 用户脚本里拿到 Scratch 页面的 axios、scratch-vm 与 React 组件实例
 
 ## 为什么要拿这三个东西
