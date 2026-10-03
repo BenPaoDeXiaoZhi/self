@@ -530,7 +530,7 @@ html[data-theme="dark"] .search-option.is-failed .search-option-hint {
   padding: 8px;
   background: var(--chip);
   border-left: 3px solid rgba(9, 105, 218, 0.35);
-  border-radius: 0px var(--radius) var(--radius) 0px
+  border-radius: 0px var(--radius) var(--radius) 0px;
   color: var(--muted);
 }
 
