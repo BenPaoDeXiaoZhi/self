@@ -129,12 +129,17 @@ export function searchPosts(
     opts.tag = { tags: tag };
   }
 
-  // 仅标签过滤
+  // 仅标签过滤：无关键词，按日期倒序
   if (!q) {
     return index
       .search("", opts)
       .flatMap((r) => r.result)
-      .map(String);
+      .map(String)
+      .sort((a, b) => {
+        const da = metaDocs.get(a)?.date ?? "";
+        const db = metaDocs.get(b)?.date ?? "";
+        return db.localeCompare(da);
+      });
   }
 
   const field: (keyof RawBlogMeta)[] = ["title", "desc", "date", "tags"];
