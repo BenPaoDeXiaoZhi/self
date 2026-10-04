@@ -1,0 +1,148 @@
+/* 小游戏合集页 + 各子游戏页面共用样式 */
+
+/* 游戏页 nav 特殊处理：不用 sticky，全宽 */
+body:has(.games-hero) .site-header,
+.game-page .site-header {
+  position: relative;
+  width: 100%;
+  padding: 0 var(--gap);
+}
+
+body:has(.games-hero) .site-header .container,
+.game-page .site-header .container {
+  max-width: none;
+  padding: 0;
+}
+
+/* 合集页 */
+.games-hero {
+  text-align: center;
+  padding: 32px 16px 16px;
+}
+
+.games-hero h1 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+}
+
+.games-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 0 16px 48px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition:
+    box-shadow 100ms ease,
+    transform 100ms ease;
+}
+
+.game-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.game-card-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.game-card h3 {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+}
+
+.game-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.game-card-link {
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.games-footer {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.games-footer a {
+  font-size: 0.9rem;
+}
+
+/* 单游戏页容器（flappy-fuzi 等） */
+.game-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+}
+
+.game-card-wrap {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: box-shadow 100ms ease;
+  scroll-snap-align: center;
+}
+
+.game-card-wrap canvas {
+  display: block;
+  border-radius: var(--radius);
+  max-width: 400px;
+  height: auto;
+  touch-action: manipulation;
+  background: #70c5ce;
+}
+
+.game-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.game-tip {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.game-back {
+  color: var(--accent);
+  font-size: 0.85rem;
+  transition: opacity 100ms ease;
+}
+
+.game-back:hover {
+  opacity: 0.75;
+}

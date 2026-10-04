@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import {
   existsSync,
+  glob,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -25,6 +26,7 @@ export default defineConfig({
   entry: {
     "js/main": "src/index/main.ts",
     "js/blog": "src/blog/main.ts",
+    "js/games/flappy-fuzi": "src/games/flappy-fuzi/main.ts",
   },
   watch: ["./blogs", "./public", "./src"],
   outDir: "dist",
@@ -64,6 +66,13 @@ function chunkName(title: string): string {
 
 function onSuccess(): void {
   const blogFiles = readdirSync("./blogs");
+  glob("./dist/**/*.html", (_, matches) => {
+    const nav = readFileSync("./public/nav.html", { encoding: "utf-8" });
+    matches.forEach((n) => {
+      const content = readFileSync(n, { encoding: "utf-8" });
+      writeFileSync(n, content.replaceAll("{nav}", nav));
+    });
+  });
   const parsed = blogFiles.map((n) => {
     const content = readFileSync(`./blogs/${n}`, { encoding: "utf-8" });
     const [, date, tags, desc, blogContent] = PATTERN.exec(content) || [];

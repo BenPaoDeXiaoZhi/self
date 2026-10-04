@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="孟夫子的小游戏合集" />
+    <title>小游戏 · 孟夫子的博客</title>
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/games.css" />
+    <script>
+      // 首屏前确定主题，避免闪烁：优先 localStorage，其次系统偏好
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch (e) {}
+        var dark = stored
+          ? stored === "dark"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">{nav}</div>
+    </header>
+
+    <main class="games-hero">
+      <h1>小游戏合集</h1>
+      <p>偶尔写点小东西，玩一玩</p>
+
+      <div class="games-grid">
+        <a class="game-card game-card-link" href="./flappy-fuzi.html">
+          <span class="game-card-icon">🐦</span>
+          <h3>flappy 孟夫子</h3>
+          <p>看看你能飞多远</p>
+        </a>
+      </div>
+
+      <p class="muted" style="font-size: 0.85rem">更多游戏开发中…</p>
+    </main>
+
+    <footer class="site-footer games-footer">
+      <a href="../index.html">← 返回主页</a>
+    </footer>
+  </body>
+</html>

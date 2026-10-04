@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>flappy孟夫子 · 孟夫子的博客</title>
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/games.css" />
+  </head>
+  <body class="game-page">
+    <header class="site-header">
+      <div class="container header-inner">{nav}</div>
+    </header>
+
+    <div class="game-card-wrap">
+      <h2 class="game-title">flappy 孟夫子</h2>
+      <canvas id="root" width="400" height="600"></canvas>
+      <p class="game-tip">空格 / ↑ / 点击 / 触屏 拍打翅膀</p>
+      <a class="game-back" href="./index.html">← 返回游戏列表</a>
+    </div>
+    <script>
+      // 页面加载后自动将游戏卡片滚动吸附到视口中央
+      document.addEventListener("DOMContentLoaded", () => {
+        document
+          .querySelector(".game-card-wrap")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    </script>
+    <script src="../js/games/flappy-fuzi.js" type="module"></script>
+  </body>
+</html>

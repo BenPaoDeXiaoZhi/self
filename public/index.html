@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="孟夫子的个人简介与博客" />
     <title>个人主页 · 孟夫子的博客</title>
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <script>
       // 首屏前确定主题，避免闪烁：优先 localStorage，其次系统偏好
       (function () {
@@ -23,22 +24,7 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="container header-inner">
-        <a class="brand" href="#top">孟夫子的博客</a>
-        <nav class="nav">
-          <a href="#about">关于</a>
-          <a href="#blog">博客</a>
-          <a href="#contact">联系</a>
-          <button
-            id="theme-toggle"
-            class="theme-toggle"
-            type="button"
-            aria-pressed="false"
-          >
-            深色模式
-          </button>
-        </nav>
-      </div>
+      <div class="container header-inner">{nav}</div>
     </header>
 
     <main id="top" class="container">

@@ -1,0 +1,120 @@
+/* 博客详情页专属：文章容器、Markdown 正文样式 */
+
+/* 文章详情页 */
+.post-detail h1 {
+  font-size: 1.5rem;
+  margin-bottom: var(--gap);
+}
+
+.post-detail .post-meta {
+  margin-bottom: 4px;
+}
+
+.post-detail .post-tags {
+  margin-top: 0;
+}
+
+.post-content-message {
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* Markdown 正文 */
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4 {
+  margin: 24px 0 var(--gap);
+  line-height: 1.3;
+}
+
+.post-content h1 {
+  font-size: 1.3rem;
+}
+
+.post-content h2 {
+  font-size: 1.2rem;
+}
+
+.post-content h3,
+.post-content h4 {
+  font-size: 1.05rem;
+}
+
+.post-content p {
+  margin: 0 0 var(--gap);
+}
+
+.post-content ul,
+.post-content ol {
+  margin: 0 0 var(--gap);
+  padding-left: 24px;
+}
+
+.post-content li {
+  margin-bottom: 4px;
+}
+
+.post-content blockquote {
+  margin: 0 0 var(--gap);
+  padding: 8px;
+  background: var(--chip);
+  border-left: 3px solid rgba(9, 105, 218, 0.35);
+  border-radius: 0px var(--radius) var(--radius) 0px;
+  color: var(--muted);
+}
+
+.post-content code {
+  background: var(--chip);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+}
+
+.post-content pre {
+  background: var(--chip);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  overflow-x: auto;
+}
+
+.post-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.post-content img {
+  max-width: 100%;
+  border-radius: var(--radius);
+}
+
+.post-content hr {
+  border: none;
+  height: 1px;
+  background: var(--chip);
+  margin: 24px 0;
+}
+
+.post-content table {
+  border-collapse: collapse;
+  margin-bottom: var(--gap);
+  width: 100%;
+}
+
+.post-content th,
+.post-content td {
+  border: 1px solid var(--chip);
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.post-content th {
+  background: var(--chip);
+}
+
+/* 移动端适配（博客层） */
+@media (max-width: 600px) {
+  .card {
+    padding: 16px;
+  }
+}
