@@ -340,6 +340,11 @@ async function main(): Promise<void> {
     }
   });
 
+  // URL 带有分享配置时自动确认线路，恢复图源列表无需手动点击
+  if (urlHost || urlShunt) {
+    void confirmLine(lineList);
+  }
+
   // 分享链接透传的漫画 id：有值时自动加载详情
   if (urlAlbum) {
     const input = document.getElementById(
