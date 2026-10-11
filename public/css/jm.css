@@ -1,0 +1,119 @@
+/* JM 相关页面公共样式：控件、详情、章节、页面 */
+.jm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.jm-controls select,
+.jm-controls input {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--chip);
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+  transition: border-color 100ms ease;
+}
+
+.jm-controls select:focus,
+.jm-controls input:focus {
+  border-color: var(--accent);
+}
+
+.jm-controls button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 100ms ease;
+}
+
+.jm-controls button:hover {
+  opacity: 0.85;
+}
+
+.jm-meta h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.jm-meta p {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+}
+
+.jm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.jm-tags span {
+  background: var(--chip);
+  border-radius: var(--radius);
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.jm-desc {
+  white-space: pre-wrap;
+}
+
+.jm-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.jm-chapters button {
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--chip);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 100ms ease,
+    color 100ms ease;
+}
+
+.jm-chapters button:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.jm-pages {
+  display: flex;
+  flex-direction: column;
+}
+
+.comic-page {
+  position: relative;
+  width: 100%;
+}
+
+.comic-page img {
+  display: block;
+  width: 100%;
+}
+
+/* 阅读页：容器铺满可用宽度，让漫画图片撑满 container */
+.comic-reader {
+  width: min(100%, 800px);
+}
+
+.comic-reader #comic {
+  width: 100%;
+}

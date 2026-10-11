@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>JM 漫画阅读器 · 孟夫子的博客</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/games.css" />
+    <link rel="stylesheet" href="../css/jm.css" />
+    <script src="../js/jm.js" type="module"></script>
+  </head>
+  <body class="game-page">
+    <div class="game-card-wrap">
+      <div>
+        <h2 class="game-title">节点选择</h2>
+        <div class="jm-controls">
+          <select id="node-select" aria-label="选择线路"></select>
+          <button id="confirm-btn" type="button">确认线路</button>
+          <select id="shunt-select" aria-label="选择图源">
+            <option value="" disabled selected>请先确认线路</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <h2 class="game-title">JM 漫画阅读器</h2>
+        <div class="jm-controls">
+          <input id="album-input" placeholder="漫画 id" spellcheck="false" />
+          <button id="load-btn" type="button">加载</button>
+        </div>
+        <div id="comic">输入漫画 id 并加载</div>
+      </div>
+      <a class="game-back" href="/index.html">← 返回主页</a>
+    </div>
+  </body>
+</html>

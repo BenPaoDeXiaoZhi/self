@@ -27,6 +27,8 @@ export default defineConfig({
     "js/main": "src/index/main.ts",
     "js/blog": "src/blog/main.ts",
     "js/games/flappy-fuzi": "src/games/flappy-fuzi/main.ts",
+    "js/jm": "src/jm/index.ts",
+    "js/jm-read": "src/jm/read.ts",
   },
   watch: ["./blogs", "./public", "./src"],
   outDir: "dist",
@@ -39,6 +41,7 @@ export default defineConfig({
     alwaysBundle: () => true,
     onlyBundle: false,
   },
+  sourcemap: true,
   /**
    * 静态资源复制（不设 to，默认输出到 outDir；flatten:false 保留目录结构）：
    */
