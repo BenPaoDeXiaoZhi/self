@@ -39,13 +39,17 @@ export interface ReadData {
  * 拉取章节阅读数据（/comic_read），AES 解密后返回。
  * @param host - 站点域名
  * @param readId - 章节 id
+ * @param shunt - 图源 id（可选，服务端按图源返回对应图床的图片地址）
  * @returns 章节内容（顶层结构，无信封）
  */
 export async function fetchRead(
   host: string,
   readId: number | string,
+  shunt?: number | string,
 ): Promise<ReadData> {
-  const url = `https://${host}/comic_read?id=${readId}&lang=TW`;
+  const url = `https://${host}/comic_read?id=${readId}&lang=TW${
+    shunt !== undefined && shunt !== "" ? `&shunt=${shunt}` : ""
+  }`;
   return (
     await tryDecryption(
       await fetch(url, {

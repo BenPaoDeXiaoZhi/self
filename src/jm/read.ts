@@ -4,6 +4,9 @@ import { HOST_KEY, renderPagesInto, resolveHost } from "./comic";
 /** 当前会话站点域名 */
 let host = "";
 
+/** 当前图源 id（URL 透传，服务端按图源返回对应图床地址） */
+let shunt = "";
+
 /**
  * 获取漫画内容容器。
  * @returns 容器元素，页面缺失时返回 null
@@ -22,7 +25,7 @@ async function loadChapter(readId: string): Promise<void> {
     return;
   }
   try {
-    const read = await fetchRead(host, readId);
+    const read = await fetchRead(host, readId, shunt);
     comic.replaceChildren();
     renderPagesInto(comic, read.id, read);
     return;
@@ -32,7 +35,7 @@ async function loadChapter(readId: string): Promise<void> {
   // 传入/保存的 host 失效时重新解析线路再试一次
   try {
     host = await resolveHost();
-    const read = await fetchRead(host, readId);
+    const read = await fetchRead(host, readId, shunt);
     comic.replaceChildren();
     renderPagesInto(comic, read.id, read);
   } catch (e) {
@@ -50,6 +53,7 @@ async function main(): Promise<void> {
   const id = params.get("id")?.trim();
 
   host = params.get("host") ?? "";
+  shunt = params.get("shunt") ?? "";
   if (!host) {
     try {
       host = localStorage.getItem(HOST_KEY) ?? "";

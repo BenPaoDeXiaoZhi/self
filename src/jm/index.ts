@@ -171,6 +171,10 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
  */
 function gotoRead(readId: string): void {
   const params = new URLSearchParams({ id: readId, host: currentHost });
+  const shunt = getShuntSelect()?.value;
+  if (shunt) {
+    params.set("shunt", shunt);
+  }
   location.href = `./read.html?${params}`;
 }
 

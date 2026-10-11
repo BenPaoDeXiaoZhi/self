@@ -126,6 +126,19 @@
   width: min(100%, 800px);
 }
 
+/* 阅读页不是游戏卡片：去圆角、去卡片底色，图片 canvas 直角铺满 */
+.comic-reader.game-card-wrap {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.comic-reader img,
+.comic-reader canvas {
+  border-radius: 0;
+}
+
 .comic-reader #comic {
   width: 100%;
 }
