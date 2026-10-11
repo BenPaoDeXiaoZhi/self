@@ -121,22 +121,18 @@ function setupShuntSelect(shunts: { title: string; key?: number }[]): void {
 }
 
 /**
- * 将图源测速结果写回对应 option 标签。
- * @param results - 测速结果（与图源顺序一一对应）
+ * 将单个图源测速结果写回对应 option 标签。
+ * @param index - 图源下标（与 option 一一对应）
+ * @param r - 测速结果
  */
-function updateShuntLabels(results: SpeedResult[]): void {
+function updateShuntLabel(index: number, r: SpeedResult): void {
   const select = getShuntSelect();
-  if (!select) {
+  const opt = select?.options[index];
+  if (!opt) {
     return;
   }
-  results.forEach((r, i) => {
-    const opt = select.options[i];
-    if (!opt) {
-      return;
-    }
-    opt.textContent =
-      r.ms >= 0 ? `${r.label}（${r.host}）· ${r.ms} ms` : `${r.label} · 超时`;
-  });
+  opt.textContent =
+    r.ms >= 0 ? `${r.label}（${r.host}）· ${r.ms} ms` : `${r.label} · 超时`;
 }
 
 /**
@@ -172,41 +168,39 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
     shunts = [{ title: "默认图源", key: undefined }];
   }
   setupShuntSelect(shunts);
+  shuntHosts = shunts.map(() => "");
 
-  const results = await Promise.all(
-    shunts.map(async ({ title, key }): Promise<SpeedResult> => {
+  // 逐个图源测速：单个完成立即回写标签与域名，不等待全部完成
+  shunts.forEach(async ({ title, key }, i): Promise<void> => {
+    let r: SpeedResult;
+    try {
+      const { data } = await fetchSettings(host, key);
+      r = { label: title, host: data.img_host, ms: -1 };
+      shuntHosts[i] = data.img_host;
       try {
-        const { data } = await fetchSettings(host, key);
-        try {
-          return {
-            label: title,
-            host: data.img_host,
-            ms: await speedTest(data.img_host),
-          };
-        } catch {
-          return { label: title, host: data.img_host, ms: -1 };
-        }
+        r.ms = await speedTest(data.img_host);
       } catch {
-        return { label: title, host: "", ms: -1 };
+        /* 测速失败按超时处理 */
       }
-    }),
-  );
-  updateShuntLabels(results);
-  shuntHosts = results.map((r) => r.host);
+    } catch {
+      r = { label: title, host: "", ms: -1 };
+    }
+    updateShuntLabel(i, r);
 
-  // 分享链接透传的图源域名：命中时选中对应图源并持久化
-  if (urlShunt) {
-    const idx = shuntHosts.findIndex((h) => h === urlShunt);
-    if (idx >= 0 && getShuntSelect()) {
-      getShuntSelect()!.value = String(shunts[idx]?.key ?? "");
-      try {
-        localStorage.setItem(SHUNT_KEY, getShuntSelect()!.value);
-      } catch {
-        /* ignore — 持久化失败不影响本次会话 */
+    // 分享链接透传的图源域名：命中时选中对应图源并持久化
+    if (urlShunt && r.host && r.host === urlShunt) {
+      const shuntSelect = getShuntSelect();
+      if (shuntSelect) {
+        shuntSelect.value = String(shunts[i]?.key ?? "");
+        try {
+          localStorage.setItem(SHUNT_KEY, shuntSelect.value);
+        } catch {
+          /* ignore — 持久化失败不影响本次会话 */
+        }
       }
     }
-  }
-  syncUrl();
+    syncUrl();
+  });
 }
 
 /**
