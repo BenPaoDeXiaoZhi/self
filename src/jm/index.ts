@@ -27,6 +27,9 @@ let urlShunt = "";
 /** URL 透传的漫画 id（分享链接恢复配置用） */
 let urlAlbum = "";
 
+/** URL 透传的章节 id（分享链接恢复配置用） */
+let urlChapter = "";
+
 /** 漫画加载互斥标志 */
 let comicLoading = false;
 
@@ -45,6 +48,9 @@ function syncUrl(): void {
   }
   if (urlAlbum) {
     params.set("album", urlAlbum);
+  }
+  if (urlChapter) {
+    params.set("id", urlChapter);
   }
   const qs = params.toString();
   history.replaceState(null, "", qs ? `./index.html?${qs}` : "./index.html");
@@ -289,6 +295,7 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
   urlShunt = params.get("shunt") ?? "";
   urlAlbum = params.get("album") ?? "";
+  urlChapter = params.get("id") ?? "";
   const urlHost = params.get("host") ?? "";
   let nodeId = loadNodeId(lineList.length);
   if (urlHost) {

@@ -1,4 +1,4 @@
-import { fetchRead } from "./api/read";
+import { fetchRead, type ReadData } from "./api/read";
 import { HOST_KEY, renderPagesInto, resolveHost } from "./comic";
 
 /** 当前会话站点域名 */
@@ -32,6 +32,30 @@ function getComic(): HTMLElement | null {
 }
 
 /**
+ * 更新返回选择页链接：透传当前配置，避免丢失线路与图源。
+ * @param read - 章节数据（可选，带上章节 id 与所属漫画 id 便于恢复）
+ */
+function updateBackLink(read?: ReadData): void {
+  const back = document.querySelector<HTMLAnchorElement>(".game-back");
+  if (!back) {
+    return;
+  }
+  const backParams = new URLSearchParams();
+  if (host) {
+    backParams.set("host", host);
+  }
+  if (shunt) {
+    backParams.set("shunt", shunt);
+  }
+  if (read) {
+    backParams.set("id", String(read.id));
+    backParams.set("album", read.series_id || String(read.id));
+  }
+  const qs = backParams.toString();
+  back.href = qs ? `./index.html?${qs}` : "./index.html";
+}
+
+/**
  * 拉取章节并渲染全部图片（本页只负责展示图片内容）。
  * @param readId - 章节 id
  */
@@ -44,6 +68,7 @@ async function loadChapter(readId: string): Promise<void> {
     const read = await fetchRead(host, readId);
     comic.replaceChildren();
     renderPagesInto(comic, read.id, read, shunt);
+    updateBackLink(read);
     return;
   } catch (e) {
     console.error("加载章节失败:", e);
@@ -54,6 +79,7 @@ async function loadChapter(readId: string): Promise<void> {
     const read = await fetchRead(host, readId);
     comic.replaceChildren();
     renderPagesInto(comic, read.id, read, shunt);
+    updateBackLink(read);
   } catch (e) {
     console.error("回退线路仍失败:", e);
     comic.textContent = "加载失败，请返回选择页重试";
@@ -79,18 +105,7 @@ async function main(): Promise<void> {
   }
 
   // 返回选择页时透传当前配置，避免丢失线路与图源
-  const back = document.querySelector<HTMLAnchorElement>(".game-back");
-  if (back) {
-    const backParams = new URLSearchParams();
-    if (host) {
-      backParams.set("host", host);
-    }
-    if (shunt) {
-      backParams.set("shunt", shunt);
-    }
-    const qs = backParams.toString();
-    back.href = qs ? `./index.html?${qs}` : "./index.html";
-  }
+  updateBackLink();
 
   const comic = getComic();
   if (!id) {
