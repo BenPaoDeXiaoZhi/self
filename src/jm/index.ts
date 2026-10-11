@@ -24,6 +24,9 @@ let shuntHosts: string[] = [];
 /** URL 透传的图源图床域名（分享链接恢复配置用） */
 let urlShunt = "";
 
+/** URL 透传的漫画 id（分享链接恢复配置用） */
+let urlAlbum = "";
+
 /** 漫画加载互斥标志 */
 let comicLoading = false;
 
@@ -39,6 +42,9 @@ function syncUrl(): void {
   const shuntHost = select ? shuntHosts[select.selectedIndex] ?? "" : "";
   if (shuntHost) {
     params.set("shunt", shuntHost);
+  }
+  if (urlAlbum) {
+    params.set("album", urlAlbum);
   }
   const qs = params.toString();
   history.replaceState(null, "", qs ? `./index.html?${qs}` : "./index.html");
@@ -267,6 +273,8 @@ async function loadAlbum(): Promise<void> {
   comicLoading = true;
   try {
     const { data } = await fetchAlbum(currentHost, id);
+    urlAlbum = id;
+    syncUrl();
     renderAlbum(data);
   } catch (e) {
     console.error("加载漫画失败:", e);
@@ -286,6 +294,7 @@ async function main(): Promise<void> {
   // 分享链接优先：URL 指定的 host 命中线路时直接采用并持久化
   const params = new URLSearchParams(location.search);
   urlShunt = params.get("shunt") ?? "";
+  urlAlbum = params.get("album") ?? "";
   const urlHost = params.get("host") ?? "";
   let nodeId = loadNodeId(lineList.length);
   if (urlHost) {
@@ -330,6 +339,17 @@ async function main(): Promise<void> {
       void loadAlbum();
     }
   });
+
+  // 分享链接透传的漫画 id：有值时自动加载详情
+  if (urlAlbum) {
+    const input = document.getElementById(
+      "album-input",
+    ) as HTMLInputElement | null;
+    if (input) {
+      input.value = urlAlbum;
+    }
+    void loadAlbum();
+  }
 }
 
 main();
