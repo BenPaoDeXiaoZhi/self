@@ -96,11 +96,13 @@ export function renderMetaInto(container: HTMLElement, data: AlbumData): void {
  * @param container - 目标容器
  * @param readId - 章节 id（还原 key 的一部分，官方传 /comic_read 响应的 id）
  * @param read - 章节数据
+ * @param shuntHost - 图源图床域名（可选，渲染时替换图片原始域名）
  */
 export function renderPagesInto(
   container: HTMLElement,
   readId: number,
   read: ReadData,
+  shuntHost?: string,
 ): void {
   const pages = document.createElement("div");
   pages.className = "jm-pages";
@@ -110,7 +112,10 @@ export function renderPagesInto(
     wrap.className = "comic-page";
 
     const img = document.createElement("img");
-    img.src = image;
+    img.src =
+      shuntHost && shuntHost !== ""
+        ? image.replace(/^https?:\/\/[^/]+/, `https://${shuntHost}`)
+        : image;
     img.loading = "lazy";
     img.draggable = false;
     // 图源有防盗链，本地/跨域 Referer 会被连接重置

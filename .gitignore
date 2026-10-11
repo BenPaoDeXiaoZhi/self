@@ -167,3 +167,5 @@ dist
 .wrangler/
 
 .vs/*
+
+.trae-html-share-packages/

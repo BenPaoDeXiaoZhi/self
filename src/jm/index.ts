@@ -18,8 +18,43 @@ let lineList: [string, string][] = [];
 /** 当前会话使用的站点域名（确认线路时更新） */
 let currentHost = "";
 
+/** 各图源 option 对应的图床域名（测速结果顺序与 option 一致） */
+let shuntHosts: string[] = [];
+
+/** URL 透传的图源图床域名（分享链接恢复配置用） */
+let urlShunt = "";
+
+/** URL 透传的漫画 id（分享链接恢复配置用） */
+let urlAlbum = "";
+
+/** URL 透传的章节 id（分享链接恢复配置用） */
+let urlChapter = "";
+
 /** 漫画加载互斥标志 */
 let comicLoading = false;
+
+/**
+ * 将当前线路、图源与漫画 id 配置写入 URL（不刷新页面），便于分享。
+ */
+function syncUrl(): void {
+  const params = new URLSearchParams();
+  if (currentHost) {
+    params.set("host", currentHost);
+  }
+  const select = getShuntList();
+  const shuntHost = select ? shuntHosts[selectedShuntIndex()] ?? "" : "";
+  if (shuntHost) {
+    params.set("shunt", shuntHost);
+  }
+  if (urlAlbum) {
+    params.set("album", urlAlbum);
+  }
+  if (urlChapter) {
+    params.set("id", urlChapter);
+  }
+  const qs = params.toString();
+  history.replaceState(null, "", qs ? `./index.html?${qs}` : "./index.html");
+}
 
 /**
  * 获取线路选择框。
@@ -30,11 +65,31 @@ function getSelect(): HTMLSelectElement | null {
 }
 
 /**
- * 获取图源选择框。
- * @returns 选择框元素，页面缺失时返回 null
+ * 获取图源单选列表容器。
+ * @returns 容器元素，页面缺失时返回 null
  */
-function getShuntSelect(): HTMLSelectElement | null {
-  return document.getElementById("shunt-select") as HTMLSelectElement | null;
+function getShuntList(): HTMLElement | null {
+  return document.getElementById("shunt-list");
+}
+
+/**
+ * 获取图源单选框列表（顺序与测速结果一致）。
+ * @returns radio 输入框数组
+ */
+function getShuntRadios(): HTMLInputElement[] {
+  return [
+    ...(getShuntList()?.querySelectorAll<HTMLInputElement>(
+      'input[type="radio"]',
+    ) ?? []),
+  ];
+}
+
+/**
+ * 获取当前选中的图源下标。
+ * @returns 选中下标，未选中时返回 -1
+ */
+function selectedShuntIndex(): number {
+  return getShuntRadios().findIndex((r) => r.checked);
 }
 
 /**
@@ -66,48 +121,54 @@ function setupNodeSelect(lines: [string, string][], current: number): void {
 }
 
 /**
- * 填充图源选择框并全部置为测速中，恢复上次保存的选择。
+ * 填充图源单选列表并全部置为测速中，恢复上次保存的选择。
  * @param shunts - 图源列表
  */
 function setupShuntSelect(shunts: { title: string; key?: number }[]): void {
-  const select = getShuntSelect();
-  if (!select) {
+  const list = getShuntList();
+  if (!list) {
     return;
   }
-  select.replaceChildren();
-  shunts.forEach(({ title, key }) => {
-    const opt = document.createElement("option");
-    opt.value = String(key ?? "");
-    opt.textContent = `${title}${TESTING_SUFFIX}`;
-    select.appendChild(opt);
-  });
+  list.replaceChildren();
+  let saved = "";
   try {
-    const saved = localStorage.getItem(SHUNT_KEY);
-    if (saved && shunts.some((s) => String(s.key ?? "") === saved)) {
-      select.value = saved;
-    }
+    saved = localStorage.getItem(SHUNT_KEY) ?? "";
   } catch {
     /* ignore — 恢复失败保持默认 */
+  }
+  shunts.forEach(({ title, key }) => {
+    const label = document.createElement("label");
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "shunt";
+    radio.value = String(key ?? "");
+    const text = document.createElement("span");
+    text.textContent = `${title}${TESTING_SUFFIX}`;
+    label.append(radio, text);
+    if (saved && radio.value === saved) {
+      radio.checked = true;
+    }
+    list.appendChild(label);
+  });
+  // 无保存选择时默认选中第一个
+  const radios = getShuntRadios();
+  if (!radios.some((r) => r.checked) && radios[0]) {
+    radios[0].checked = true;
   }
 }
 
 /**
- * 将图源测速结果写回对应 option 标签。
- * @param results - 测速结果（与图源顺序一一对应）
+ * 将单个图源测速结果写回对应标签。
+ * @param index - 图源下标（与 radio 一一对应）
+ * @param r - 测速结果
  */
-function updateShuntLabels(results: SpeedResult[]): void {
-  const select = getShuntSelect();
-  if (!select) {
+function updateShuntLabel(index: number, r: SpeedResult): void {
+  const text = getShuntList()?.querySelectorAll("label > span")[index];
+  if (!text) {
     return;
   }
-  results.forEach((r, i) => {
-    const opt = select.options[i];
-    if (!opt) {
-      return;
-    }
-    opt.textContent =
-      r.ms >= 0 ? `${r.label}（${r.host}）· ${r.ms} ms` : `${r.label} · 超时`;
-  });
+  text.textContent =
+    r.ms >= 0 ? `${r.label}（${r.host}）· ${r.ms} ms` : `${r.label} · 超时`;
 }
 
 /**
@@ -143,37 +204,51 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
     shunts = [{ title: "默认图源", key: undefined }];
   }
   setupShuntSelect(shunts);
+  shuntHosts = shunts.map(() => "");
 
-  const results = await Promise.all(
-    shunts.map(async ({ title, key }): Promise<SpeedResult> => {
+  // 逐个图源测速：单个完成立即回写标签与域名，不等待全部完成
+  shunts.forEach(async ({ title, key }, i): Promise<void> => {
+    let r: SpeedResult;
+    try {
+      const { data } = await fetchSettings(host, key);
+      r = { label: title, host: data.img_host, ms: -1 };
+      shuntHosts[i] = data.img_host;
       try {
-        const { data } = await fetchSettings(host, key);
-        try {
-          return {
-            label: title,
-            host: data.img_host,
-            ms: await speedTest(data.img_host),
-          };
-        } catch {
-          return { label: title, host: data.img_host, ms: -1 };
-        }
+        r.ms = await speedTest(data.img_host);
       } catch {
-        return { label: title, host: "", ms: -1 };
+        /* 测速失败按超时处理 */
       }
-    }),
-  );
-  updateShuntLabels(results);
+    } catch {
+      r = { label: title, host: "", ms: -1 };
+    }
+    updateShuntLabel(i, r);
+
+    // 分享链接透传的图源域名：命中时选中对应图源并持久化
+    if (urlShunt && r.host && r.host === urlShunt) {
+      const radio = getShuntRadios()[i];
+      if (radio) {
+        radio.checked = true;
+        try {
+          localStorage.setItem(SHUNT_KEY, radio.value);
+        } catch {
+          /* ignore — 持久化失败不影响本次会话 */
+        }
+      }
+    }
+    syncUrl();
+  });
 }
 
 /**
- * 跳转阅读页：透传章节 id 与当前 host，避免阅读页重新解析线路失效。
+ * 跳转阅读页：透传章节 id、当前 host 与选中图源的图床域名，
+ * 避免阅读页重新解析线路/图源失效。
  * @param readId - 章节 id
  */
 function gotoRead(readId: string): void {
   const params = new URLSearchParams({ id: readId, host: currentHost });
-  const shunt = getShuntSelect()?.value;
-  if (shunt) {
-    params.set("shunt", shunt);
+  const shuntHost = shuntHosts[selectedShuntIndex()] ?? "";
+  if (shuntHost) {
+    params.set("shunt", shuntHost);
   }
   location.href = `./read.html?${params}`;
 }
@@ -227,6 +302,8 @@ async function loadAlbum(): Promise<void> {
   comicLoading = true;
   try {
     const { data } = await fetchAlbum(currentHost, id);
+    urlAlbum = id;
+    syncUrl();
     renderAlbum(data);
   } catch (e) {
     console.error("加载漫画失败:", e);
@@ -243,7 +320,24 @@ async function main(): Promise<void> {
   const endpoints = await fetchEndpoints();
   lineList = endpoints.jm3_Server;
 
-  const nodeId = loadNodeId(lineList.length);
+  // 分享链接优先：URL 指定的 host 命中线路时直接采用并持久化
+  const params = new URLSearchParams(location.search);
+  urlShunt = params.get("shunt") ?? "";
+  urlAlbum = params.get("album") ?? "";
+  urlChapter = params.get("id") ?? "";
+  const urlHost = params.get("host") ?? "";
+  let nodeId = loadNodeId(lineList.length);
+  if (urlHost) {
+    const idx = lineList.findIndex(([host]) => host === urlHost);
+    if (idx >= 0) {
+      nodeId = idx;
+      try {
+        localStorage.setItem(NODE_KEY, String(idx));
+      } catch {
+        /* ignore — 持久化失败不影响本次会话 */
+      }
+    }
+  }
   setupNodeSelect(lineList, nodeId);
   // 未确认线路时也按保存的线路取 host，保证漫画加载可用
   currentHost = lineList[nodeId]?.[0] ?? "";
@@ -252,17 +346,23 @@ async function main(): Promise<void> {
   } catch {
     /* ignore — 持久化失败不影响本次会话 */
   }
+  syncUrl();
 
   document.getElementById("confirm-btn")?.addEventListener("click", () => {
     void confirmLine(lineList);
   });
 
-  document.getElementById("shunt-select")?.addEventListener("change", (e) => {
+  document.getElementById("shunt-list")?.addEventListener("change", (e) => {
+    const radio = e.target as HTMLInputElement;
+    if (radio.type !== "radio") {
+      return;
+    }
     try {
-      localStorage.setItem(SHUNT_KEY, (e.target as HTMLSelectElement).value);
+      localStorage.setItem(SHUNT_KEY, radio.value);
     } catch {
       /* ignore — 持久化失败不影响本次会话 */
     }
+    syncUrl();
   });
 
   document.getElementById("load-btn")?.addEventListener("click", () => {
@@ -273,6 +373,22 @@ async function main(): Promise<void> {
       void loadAlbum();
     }
   });
+
+  // URL 带有分享配置时自动确认线路，恢复图源列表无需手动点击
+  if (urlHost || urlShunt) {
+    void confirmLine(lineList);
+  }
+
+  // 分享链接透传的漫画 id：有值时自动加载详情
+  if (urlAlbum) {
+    const input = document.getElementById(
+      "album-input",
+    ) as HTMLInputElement | null;
+    if (input) {
+      input.value = urlAlbum;
+    }
+    void loadAlbum();
+  }
 }
 
 main();

@@ -10,6 +10,7 @@
     // 构建产物目录：由 `npm run build` 生成（tsdown 打包 + copy 静态资源）
     "directory": "./dist",
   },
+  "previews": {},
   "observability": {
     "enabled": true,
   },
