@@ -4,8 +4,24 @@ import { HOST_KEY, renderPagesInto, resolveHost } from "./comic";
 /** 当前会话站点域名 */
 let host = "";
 
-/** 当前图源 id（URL 透传，服务端按图源返回对应图床地址） */
+/** 当前图源图床域名（URL 透传，渲染图片时替换原始域名） */
 let shunt = "";
+
+/**
+ * 提取图床域名：兼容完整 URL 或裸域名。
+ * @param value - URL 参数透传的图源地址
+ * @returns 域名，无法解析时返回空串
+ */
+function parseShuntHost(value: string): string {
+  if (!value) {
+    return "";
+  }
+  try {
+    return new URL(value.includes("://") ? value : `https://${value}`).hostname;
+  } catch {
+    return "";
+  }
+}
 
 /**
  * 获取漫画内容容器。
@@ -25,9 +41,9 @@ async function loadChapter(readId: string): Promise<void> {
     return;
   }
   try {
-    const read = await fetchRead(host, readId, shunt);
+    const read = await fetchRead(host, readId);
     comic.replaceChildren();
-    renderPagesInto(comic, read.id, read);
+    renderPagesInto(comic, read.id, read, shunt);
     return;
   } catch (e) {
     console.error("加载章节失败:", e);
@@ -35,9 +51,9 @@ async function loadChapter(readId: string): Promise<void> {
   // 传入/保存的 host 失效时重新解析线路再试一次
   try {
     host = await resolveHost();
-    const read = await fetchRead(host, readId, shunt);
+    const read = await fetchRead(host, readId);
     comic.replaceChildren();
-    renderPagesInto(comic, read.id, read);
+    renderPagesInto(comic, read.id, read, shunt);
   } catch (e) {
     console.error("回退线路仍失败:", e);
     comic.textContent = "加载失败，请返回选择页重试";
@@ -53,7 +69,7 @@ async function main(): Promise<void> {
   const id = params.get("id")?.trim();
 
   host = params.get("host") ?? "";
-  shunt = params.get("shunt") ?? "";
+  shunt = parseShuntHost(params.get("shunt") ?? "");
   if (!host) {
     try {
       host = localStorage.getItem(HOST_KEY) ?? "";

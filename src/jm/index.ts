@@ -18,6 +18,9 @@ let lineList: [string, string][] = [];
 /** 当前会话使用的站点域名（确认线路时更新） */
 let currentHost = "";
 
+/** 各图源 option 对应的图床域名（测速结果顺序与 option 一致） */
+let shuntHosts: string[] = [];
+
 /** 漫画加载互斥标志 */
 let comicLoading = false;
 
@@ -163,17 +166,20 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
     }),
   );
   updateShuntLabels(results);
+  shuntHosts = results.map((r) => r.host);
 }
 
 /**
- * 跳转阅读页：透传章节 id 与当前 host，避免阅读页重新解析线路失效。
+ * 跳转阅读页：透传章节 id、当前 host 与选中图源的图床域名，
+ * 避免阅读页重新解析线路/图源失效。
  * @param readId - 章节 id
  */
 function gotoRead(readId: string): void {
   const params = new URLSearchParams({ id: readId, host: currentHost });
-  const shunt = getShuntSelect()?.value;
-  if (shunt) {
-    params.set("shunt", shunt);
+  const select = getShuntSelect();
+  const shuntHost = select ? shuntHosts[select.selectedIndex] : "";
+  if (shuntHost) {
+    params.set("shunt", shuntHost);
   }
   location.href = `./read.html?${params}`;
 }
