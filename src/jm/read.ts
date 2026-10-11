@@ -78,6 +78,20 @@ async function main(): Promise<void> {
     }
   }
 
+  // 返回选择页时透传当前配置，避免丢失线路与图源
+  const back = document.querySelector<HTMLAnchorElement>(".game-back");
+  if (back) {
+    const backParams = new URLSearchParams();
+    if (host) {
+      backParams.set("host", host);
+    }
+    if (shunt) {
+      backParams.set("shunt", shunt);
+    }
+    const qs = backParams.toString();
+    back.href = qs ? `./index.html?${qs}` : "./index.html";
+  }
+
   const comic = getComic();
   if (!id) {
     if (comic) {
