@@ -31,7 +31,7 @@ let urlAlbum = "";
 let comicLoading = false;
 
 /**
- * 将当前线路与图源配置写入 URL（不刷新页面），便于分享。
+ * 将当前线路、图源与漫画 id 配置写入 URL（不刷新页面），便于分享。
  */
 function syncUrl(): void {
   const params = new URLSearchParams();
