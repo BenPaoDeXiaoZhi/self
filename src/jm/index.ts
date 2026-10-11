@@ -21,8 +21,28 @@ let currentHost = "";
 /** 各图源 option 对应的图床域名（测速结果顺序与 option 一致） */
 let shuntHosts: string[] = [];
 
+/** URL 透传的图源图床域名（分享链接恢复配置用） */
+let urlShunt = "";
+
 /** 漫画加载互斥标志 */
 let comicLoading = false;
+
+/**
+ * 将当前线路与图源配置写入 URL（不刷新页面），便于分享。
+ */
+function syncUrl(): void {
+  const params = new URLSearchParams();
+  if (currentHost) {
+    params.set("host", currentHost);
+  }
+  const select = getShuntSelect();
+  const shuntHost = select ? shuntHosts[select.selectedIndex] ?? "" : "";
+  if (shuntHost) {
+    params.set("shunt", shuntHost);
+  }
+  const qs = params.toString();
+  history.replaceState(null, "", qs ? `./index.html?${qs}` : "./index.html");
+}
 
 /**
  * 获取线路选择框。
@@ -167,6 +187,20 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
   );
   updateShuntLabels(results);
   shuntHosts = results.map((r) => r.host);
+
+  // 分享链接透传的图源域名：命中时选中对应图源并持久化
+  if (urlShunt) {
+    const idx = shuntHosts.findIndex((h) => h === urlShunt);
+    if (idx >= 0 && getShuntSelect()) {
+      getShuntSelect()!.value = String(shunts[idx]?.key ?? "");
+      try {
+        localStorage.setItem(SHUNT_KEY, getShuntSelect()!.value);
+      } catch {
+        /* ignore — 持久化失败不影响本次会话 */
+      }
+    }
+  }
+  syncUrl();
 }
 
 /**
@@ -249,7 +283,22 @@ async function main(): Promise<void> {
   const endpoints = await fetchEndpoints();
   lineList = endpoints.jm3_Server;
 
-  const nodeId = loadNodeId(lineList.length);
+  // 分享链接优先：URL 指定的 host 命中线路时直接采用并持久化
+  const params = new URLSearchParams(location.search);
+  urlShunt = params.get("shunt") ?? "";
+  const urlHost = params.get("host") ?? "";
+  let nodeId = loadNodeId(lineList.length);
+  if (urlHost) {
+    const idx = lineList.findIndex(([host]) => host === urlHost);
+    if (idx >= 0) {
+      nodeId = idx;
+      try {
+        localStorage.setItem(NODE_KEY, String(idx));
+      } catch {
+        /* ignore — 持久化失败不影响本次会话 */
+      }
+    }
+  }
   setupNodeSelect(lineList, nodeId);
   // 未确认线路时也按保存的线路取 host，保证漫画加载可用
   currentHost = lineList[nodeId]?.[0] ?? "";
@@ -258,6 +307,7 @@ async function main(): Promise<void> {
   } catch {
     /* ignore — 持久化失败不影响本次会话 */
   }
+  syncUrl();
 
   document.getElementById("confirm-btn")?.addEventListener("click", () => {
     void confirmLine(lineList);
@@ -269,6 +319,7 @@ async function main(): Promise<void> {
     } catch {
       /* ignore — 持久化失败不影响本次会话 */
     }
+    syncUrl();
   });
 
   document.getElementById("load-btn")?.addEventListener("click", () => {
