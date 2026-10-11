@@ -116,7 +116,7 @@ body:has(.games-hero) .site-header .container,
   scroll-snap-align: center;
 }
 
-.game-card-wrap canvas {
+.game-card-wrap canvas#root {
   display: block;
   border-radius: var(--radius);
   max-width: 400px;
