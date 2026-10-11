@@ -109,6 +109,18 @@
   width: 100%;
 }
 
+/* 单页加载失败占位 */
+.comic-page-fail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  background: var(--chip);
+  border-radius: var(--radius);
+}
+
 /* 阅读页：容器铺满可用宽度，让漫画图片撑满 container */
 .comic-reader {
   width: min(100%, 800px);

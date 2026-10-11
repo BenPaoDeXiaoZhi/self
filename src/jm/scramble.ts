@@ -1,4 +1,4 @@
-import CryptoJS from "crypto-js";
+import md5 from "md5";
 
 /**
  * 等待图片加载完成。
@@ -36,10 +36,10 @@ export function clearCanvases(img: HTMLImageElement): void {
  * @param page - 页标识（建议传图片 URL 文件名，如 00001，与官方 App 一致）
  * @returns 切份数（2~20 的偶数，无法映射时为 10）
  */
-function getNum(aid: number | string, page: number | string): number {
+export function getNum(aid: number | string, page: number | string): number {
   const aidNum = parseInt(String(aid), 10);
-  const md5 = CryptoJS.MD5(`${aid}${page}`).toString();
-  let key = String(md5.charCodeAt(md5.length - 1));
+  const digest = md5(`${aid}${page}`);
+  let key = String(digest.charCodeAt(digest.length - 1));
 
   if (aidNum >= 268850 && aidNum <= 421925) {
     key = String(Number(key) % 10);
@@ -50,6 +50,56 @@ function getNum(aid: number | string, page: number | string): number {
   // key 0~9 依序映射 2~20；未命中（旧漫 key 为原始字符码）保持 10
   const table = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
   return table[Number(key)] ?? 10;
+}
+
+/** 还原切片计划：单条对应一次 drawImage 调用 */
+export interface SlicePlan {
+  /** 源图 y 起点 */
+  sy: number;
+  /** 源图切片高度 */
+  sh: number;
+  /** 目标 y 起点 */
+  dy: number;
+  /** 目标高度（非末片多垫 1px 盖接缝） */
+  dh: number;
+}
+
+/**
+ * 计算切片计划：自底向上取片段，累积边界整数对齐。
+ * 与官方 App 原版循环逐行一致，抽出纯函数便于对拍测试。
+ * @param h - 原图高
+ * @param num - 切份数
+ * @param scale - 缩放比（目标宽 / 原图宽）
+ * @returns 各切片 drawImage 参数（源 x=0、宽=原图宽，故不含 w）
+ */
+export function computeSlicePlan(
+  h: number,
+  num: number,
+  scale: number,
+): SlicePlan[] {
+  const plan: SlicePlan[] = [];
+  const remainder = h % num;
+
+  for (let i = 0; i < num; i++) {
+    let copyH = Math.floor(h / num);
+    let py = copyH * i;
+    // 自底向上取片段：第 i 段对应原图底部第 i 个切片
+    const sy = h - copyH * (i + 1) - remainder;
+
+    if (i === 0) {
+      copyH += remainder;
+    } else {
+      py += remainder;
+    }
+
+    // 累积边界整数对齐，各自 round 高度会差 1px 露出白线
+    const dy = Math.round(py * scale);
+    const dyNext = Math.round((py + copyH) * scale);
+    const dh = dyNext - dy + (i === num - 1 ? 0 : 1); // 多垫 1px 盖掉缩放边缘接缝
+
+    plan.push({ sy, sh: copyH, dy, dh });
+  }
+  return plan;
 }
 
 /**
@@ -95,28 +145,9 @@ function restoreImage(img: HTMLImageElement, num: number): HTMLCanvasElement {
   canvas.style.width = "100%";
   canvas.style.display = "block";
 
-  const remainder = h % num;
-  const copyW = w;
-
-  for (let i = 0; i < num; i++) {
-    let copyH = Math.floor(h / num);
-    let py = copyH * i;
-    // 自底向上取片段：第 i 段对应原图底部第 i 个切片
-    const y = h - copyH * (i + 1) - remainder;
-
-    if (i === 0) {
-      copyH += remainder;
-    } else {
-      py += remainder;
-    }
-
-    // 累积边界整数对齐，各自 round 高度会差 1px 露出白线
-    const dy = Math.round(py * scale);
-    const dyNext = Math.round((py + copyH) * scale);
-    const dh = dyNext - dy + (i === num - 1 ? 0 : 1); // 多垫 1px 盖掉缩放边缘接缝
-
-    ctx.drawImage(img, 0, y, copyW, copyH, 0, dy, canvas.width, dh);
-  }
+  computeSlicePlan(h, num, scale).forEach((p) => {
+    ctx.drawImage(img, 0, p.sy, w, p.sh, 0, p.dy, canvas.width, p.dh);
+  });
 
   return canvas;
 }

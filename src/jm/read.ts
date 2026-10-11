@@ -24,7 +24,7 @@ async function loadChapter(readId: string): Promise<void> {
   try {
     const read = await fetchRead(host, readId);
     comic.replaceChildren();
-    renderPagesInto(comic, Number(read.series_id) || 0, read);
+    renderPagesInto(comic, read.id, read);
     return;
   } catch (e) {
     console.error("加载章节失败:", e);
@@ -34,7 +34,7 @@ async function loadChapter(readId: string): Promise<void> {
     host = await resolveHost();
     const read = await fetchRead(host, readId);
     comic.replaceChildren();
-    renderPagesInto(comic, Number(read.series_id) || 0, read);
+    renderPagesInto(comic, read.id, read);
   } catch (e) {
     console.error("回退线路仍失败:", e);
     comic.textContent = "加载失败，请返回选择页重试";

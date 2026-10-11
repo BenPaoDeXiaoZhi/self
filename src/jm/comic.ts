@@ -94,12 +94,12 @@ export function renderMetaInto(container: HTMLElement, data: AlbumData): void {
 /**
  * 渲染章节图片并逐页还原乱序切片，追加到容器末尾。
  * @param container - 目标容器
- * @param albumId - 所属漫画 id（乱序还原 key 的一部分）
+ * @param readId - 章节 id（还原 key 的一部分，官方传 /comic_read 响应的 id）
  * @param read - 章节数据
  */
 export function renderPagesInto(
   container: HTMLElement,
-  albumId: number,
+  readId: number,
   read: ReadData,
 ): void {
   const pages = document.createElement("div");
@@ -113,15 +113,24 @@ export function renderPagesInto(
     img.src = image;
     img.loading = "lazy";
     img.draggable = false;
+    // 图源有防盗链，本地/跨域 Referer 会被连接重置
+    img.referrerPolicy = "no-referrer";
     img.style.opacity = "0";
     wrap.appendChild(img);
     pages.appendChild(wrap);
 
+    // 加载失败兜底：不留空白页
+    img.addEventListener("error", () => {
+      img.remove();
+      wrap.classList.add("comic-page-fail");
+      wrap.textContent = `第 ${page} 页加载失败`;
+    });
+
     void waitForImageLoad(img)
       .then(() => {
-        // 与官方 App 一致，用 URL 文件名作为还原 key
+        // 与官方 App 一致：aid 用章节 id，page 用 URL 文件名
         const altKey = image.match(/\/([^/]+)\.webp/)?.[1] ?? String(page);
-        const canvas = scrambleImage(img, albumId, read.scramble_id, altKey);
+        const canvas = scrambleImage(img, readId, read.scramble_id, altKey);
         if (canvas) {
           canvas.style.opacity = "0";
           canvas.style.transition = "opacity 150ms ease";
