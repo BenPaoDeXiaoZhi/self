@@ -39,6 +39,39 @@
   opacity: 0.85;
 }
 
+/* 图源单选列表：替代 select，避免 webview 刷新时下拉闪屏 */
+.jm-shunts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+.jm-shunts label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 100ms ease,
+    color 100ms ease;
+}
+
+.jm-shunts label:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.jm-shunts label:has(input:checked) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .jm-meta h3 {
   margin: 0 0 8px;
   font-size: 1.1rem;

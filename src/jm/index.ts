@@ -41,8 +41,8 @@ function syncUrl(): void {
   if (currentHost) {
     params.set("host", currentHost);
   }
-  const select = getShuntSelect();
-  const shuntHost = select ? shuntHosts[select.selectedIndex] ?? "" : "";
+  const select = getShuntList();
+  const shuntHost = select ? shuntHosts[selectedShuntIndex()] ?? "" : "";
   if (shuntHost) {
     params.set("shunt", shuntHost);
   }
@@ -65,11 +65,31 @@ function getSelect(): HTMLSelectElement | null {
 }
 
 /**
- * 获取图源选择框。
- * @returns 选择框元素，页面缺失时返回 null
+ * 获取图源单选列表容器。
+ * @returns 容器元素，页面缺失时返回 null
  */
-function getShuntSelect(): HTMLSelectElement | null {
-  return document.getElementById("shunt-select") as HTMLSelectElement | null;
+function getShuntList(): HTMLElement | null {
+  return document.getElementById("shunt-list");
+}
+
+/**
+ * 获取图源单选框列表（顺序与测速结果一致）。
+ * @returns radio 输入框数组
+ */
+function getShuntRadios(): HTMLInputElement[] {
+  return [
+    ...(getShuntList()?.querySelectorAll<HTMLInputElement>(
+      'input[type="radio"]',
+    ) ?? []),
+  ];
+}
+
+/**
+ * 获取当前选中的图源下标。
+ * @returns 选中下标，未选中时返回 -1
+ */
+function selectedShuntIndex(): number {
+  return getShuntRadios().findIndex((r) => r.checked);
 }
 
 /**
@@ -101,43 +121,53 @@ function setupNodeSelect(lines: [string, string][], current: number): void {
 }
 
 /**
- * 填充图源选择框并全部置为测速中，恢复上次保存的选择。
+ * 填充图源单选列表并全部置为测速中，恢复上次保存的选择。
  * @param shunts - 图源列表
  */
 function setupShuntSelect(shunts: { title: string; key?: number }[]): void {
-  const select = getShuntSelect();
-  if (!select) {
+  const list = getShuntList();
+  if (!list) {
     return;
   }
-  select.replaceChildren();
-  shunts.forEach(({ title, key }) => {
-    const opt = document.createElement("option");
-    opt.value = String(key ?? "");
-    opt.textContent = `${title}${TESTING_SUFFIX}`;
-    select.appendChild(opt);
-  });
+  list.replaceChildren();
+  let saved = "";
   try {
-    const saved = localStorage.getItem(SHUNT_KEY);
-    if (saved && shunts.some((s) => String(s.key ?? "") === saved)) {
-      select.value = saved;
-    }
+    saved = localStorage.getItem(SHUNT_KEY) ?? "";
   } catch {
     /* ignore — 恢复失败保持默认 */
+  }
+  shunts.forEach(({ title, key }) => {
+    const label = document.createElement("label");
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "shunt";
+    radio.value = String(key ?? "");
+    const text = document.createElement("span");
+    text.textContent = `${title}${TESTING_SUFFIX}`;
+    label.append(radio, text);
+    if (saved && radio.value === saved) {
+      radio.checked = true;
+    }
+    list.appendChild(label);
+  });
+  // 无保存选择时默认选中第一个
+  const radios = getShuntRadios();
+  if (!radios.some((r) => r.checked) && radios[0]) {
+    radios[0].checked = true;
   }
 }
 
 /**
- * 将单个图源测速结果写回对应 option 标签。
- * @param index - 图源下标（与 option 一一对应）
+ * 将单个图源测速结果写回对应标签。
+ * @param index - 图源下标（与 radio 一一对应）
  * @param r - 测速结果
  */
 function updateShuntLabel(index: number, r: SpeedResult): void {
-  const select = getShuntSelect();
-  const opt = select?.options[index];
-  if (!opt) {
+  const text = getShuntList()?.querySelectorAll("label > span")[index];
+  if (!text) {
     return;
   }
-  opt.textContent =
+  text.textContent =
     r.ms >= 0 ? `${r.label}（${r.host}）· ${r.ms} ms` : `${r.label} · 超时`;
 }
 
@@ -195,11 +225,11 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
 
     // 分享链接透传的图源域名：命中时选中对应图源并持久化
     if (urlShunt && r.host && r.host === urlShunt) {
-      const shuntSelect = getShuntSelect();
-      if (shuntSelect) {
-        shuntSelect.value = String(shunts[i]?.key ?? "");
+      const radio = getShuntRadios()[i];
+      if (radio) {
+        radio.checked = true;
         try {
-          localStorage.setItem(SHUNT_KEY, shuntSelect.value);
+          localStorage.setItem(SHUNT_KEY, radio.value);
         } catch {
           /* ignore — 持久化失败不影响本次会话 */
         }
@@ -216,8 +246,7 @@ async function confirmLine(lines: [string, string][]): Promise<void> {
  */
 function gotoRead(readId: string): void {
   const params = new URLSearchParams({ id: readId, host: currentHost });
-  const select = getShuntSelect();
-  const shuntHost = select ? shuntHosts[select.selectedIndex] : "";
+  const shuntHost = shuntHosts[selectedShuntIndex()] ?? "";
   if (shuntHost) {
     params.set("shunt", shuntHost);
   }
@@ -323,9 +352,13 @@ async function main(): Promise<void> {
     void confirmLine(lineList);
   });
 
-  document.getElementById("shunt-select")?.addEventListener("change", (e) => {
+  document.getElementById("shunt-list")?.addEventListener("change", (e) => {
+    const radio = e.target as HTMLInputElement;
+    if (radio.type !== "radio") {
+      return;
+    }
     try {
-      localStorage.setItem(SHUNT_KEY, (e.target as HTMLSelectElement).value);
+      localStorage.setItem(SHUNT_KEY, radio.value);
     } catch {
       /* ignore — 持久化失败不影响本次会话 */
     }
